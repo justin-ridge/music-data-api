@@ -1,16 +1,16 @@
-from flask import Flask
-from flask import request
+from flask import Flask, request
+from flask_cors import CORS
 import songs
 import compress
 
-compress.unzip_db()
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-@app.route('/songs/<songid>', methods=['GET'])
+@app.route('/api/songs/<songid>', methods=['GET'])
 def get_song(songid):
     return songs.get_song(songid)
 
-@app.route('/songs', methods=['GET'])
+@app.route('/api/songs', methods=['GET'])
 def get_songs():
     page = request.args.get('page')
     metadata = request.args.get('metadata')
@@ -25,13 +25,14 @@ def get_songs():
     else:
         return songs.get_songs(page)
 
-@app.route('/songs/pagecount', methods=['GET'])
+@app.route('/api/songs/pagecount', methods=['GET'])
 def get_page_count():
     return songs.get_page_count()
 
-@app.route('/songs/count', methods=['GET'])
+@app.route('/api/songs/count', methods=['GET'])
 def get_count():
     return songs.get_count()
     
 if __name__ == '__main__':
+    compress.unzip_db()
     app.run(debug=True)

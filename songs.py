@@ -27,5 +27,5 @@ def get_songs_minmax(page):
 
 def get_songs_query(join, page):
     offset = int(page) * PAGE_SIZE
-    query = db.query_db('SELECT * FROM songs s %s LIMIT %d OFFSET %d;' % (join, PAGE_SIZE, offset))
+    query = db.query_db('SELECT * FROM songs s %s  ORDER BY artist, name LIMIT %d OFFSET %d;' % (join, PAGE_SIZE, offset))
     return json.dumps(query)
