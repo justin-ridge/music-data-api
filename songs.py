@@ -20,10 +20,10 @@ def get_count():
     return str(query[0].get('COUNT(*)'))
 
 def get_songs_features(page):
-    return get_songs_query('JOIN minmax m ON s.songid=m.songid', page)
+    return get_songs_query('JOIN features f ON s.songid=f.songid', page)
 
 def get_songs_minmax(page):
-    return get_songs_query('JOIN features f ON s.songid=f.songid', page)
+    return get_songs_query('JOIN minmax m ON s.songid=m.songid', page)
 
 def get_songs_query(join, page):
     offset = int(page) * PAGE_SIZE
