@@ -1,7 +1,9 @@
 from flask import Flask
 from flask import request
 import songs
+import compress
 
+compress.unzip_db()
 app = Flask(__name__)
 
 @app.route('/songs/<songid>', methods=['GET'])
