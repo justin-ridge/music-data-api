@@ -33,4 +33,5 @@ def get_page_count():
 def get_count():
     return songs.get_count()
     
-app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)
