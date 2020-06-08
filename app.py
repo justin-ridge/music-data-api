@@ -5,6 +5,7 @@ import compress
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+compress.unzip_db()
 
 @app.route('/api/songs/<songid>', methods=['GET'])
 def get_song(songid):
@@ -34,5 +35,4 @@ def get_count():
     return songs.get_count()
     
 if __name__ == '__main__':
-    compress.unzip_db()
     app.run(debug=True)
