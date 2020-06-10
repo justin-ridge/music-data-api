@@ -52,4 +52,12 @@ def predict(model, data):
                 genre_Reggae,genre_Reggaeton,genre_Rock,genre_Ska,genre_Soul,genre_Soundtrack,genre_World]
     
     pred = model.predict_proba(d)
-    return {'0': pred[0][0], '1': pred[0][1]}
+    val0 = pred[0][0]
+    val1 = pred[0][1]
+    predicted_val = '1'
+    confidence = val1
+    if val1 < val0:
+        predicted_val = '0'
+        confidence = val0
+
+    return {'prediction': predicted_val, 'confidence': confidence}
