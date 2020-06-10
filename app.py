@@ -33,6 +33,23 @@ def get_page_count():
 @app.route('/api/songs/count', methods=['GET'])
 def get_count():
     return songs.get_count()
+
+@app.route('/api/songs/search', methods=['GET'])
+def search_songs():
+    name = request.args.get('name')
+    artist = request.args.get('artist')
+    genre = request.args.get('genre')
+
+    if name is None:
+        name = ''
+
+    if artist is None:
+        artist = ''
+
+    if genre is None:
+        genre = ''
+
+    return songs.search(name, artist, genre)
     
 if __name__ == '__main__':
     app.run(debug=True)
