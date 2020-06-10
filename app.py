@@ -1,11 +1,14 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import songs
 import compress
+import probability
+import pickle
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 compress.unzip_db()
+model = pickle.load(open('naive_bayes.sav', 'rb'))
 
 @app.route('/api/songs/<songid>', methods=['GET'])
 def get_song(songid):
@@ -50,6 +53,12 @@ def search_songs():
         genre = ''
 
     return songs.search(name, artist, genre)
+
+@app.route('/api/songs/predict', methods=['POST'])
+def predict():
+    data = request.json
+    result = probability.predict(model, data)
+    return jsonify(result)
     
 if __name__ == '__main__':
     app.run(debug=True)
