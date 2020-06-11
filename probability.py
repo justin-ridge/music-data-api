@@ -60,4 +60,4 @@ def predict(model, data):
         predicted_val = '0'
         confidence = val0
 
-    return {'prediction': predicted_val, 'confidence': confidence}
+    return {'result': predicted_val, 'confidence': confidence}
