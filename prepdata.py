@@ -1,4 +1,6 @@
 import pandas as pd
+import zipfile
+import io
 from sklearn.preprocessing import MinMaxScaler
 
 def clean_df(df):
@@ -23,13 +25,29 @@ def is_popular(item, popularity):
         return 1
     return 0
 
-def prep_data(df):
+def prep_data(text):
+    print('received data')
+    io_data = io.StringIO(text)
+    df = pd.read_csv(io_data)
     df = clean_df(df)
+    print('cleaned data')
     labels = pd.DataFrame()
     labels['target'] = df.apply(lambda row: is_popular(row, df['popularity'].mean()), axis=1)
+    print('label targets generated')
     df = transform_min_max(df)
-    df.to_csv('features.csv')
-    labels.to_csv('labels.csv')
+    print('min-maxed features')
+    
+    io_f = io.StringIO()
+    io_l = io.StringIO()
+    df.to_csv(io_f)
+    labels.to_csv(io_l)
 
-df = pd.read_csv('spotify_features.csv')
-prep_data(df)
+    print('csv files created')
+    zipped_file = io.BytesIO()
+    with zipfile.ZipFile(zipped_file, 'w') as z:
+        z.writestr('features.csv', io_f.getvalue())
+        z.writestr('labels.csv', io_l.getvalue())
+    
+    zipped_file.seek(0)
+    print('csv files zipped')
+    return zipped_file
