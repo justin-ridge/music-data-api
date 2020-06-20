@@ -7,6 +7,9 @@ from data_container import DataContainer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 
 def clean_df(df):
     df = df.drop(['artist_name','track_name','track_id','key','mode','time_signature'],axis=1)
@@ -78,47 +81,57 @@ def naive_bayes(data):
         'mislabeled': str((y_test.ravel() != y_pred).sum())
     }
 
-def get_image(fig):
+def get_importance(importance):
     buf = io.BytesIO()
-    fig.savefig(buf, format='png')
+    importance.nlargest(20).plot(kind='barh').get_figure().savefig(buf, format='png')
+    plt.close()
     buf.seek(0)
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
-def get_importance(importance):
-    fig = importance.nlargest(20).plot(kind='barh').get_figure()
-    return get_image(fig)
-
 def get_mean_pie(features):
-    fig = features.mean().plot(kind='pie', figsize=(20, 16), fontsize=26).get_figure()
-    return get_image(fig)
+    mb = io.BytesIO()
+    features.mean().plot(kind='pie', figsize=(20, 16), fontsize=26).get_figure().savefig(mb, format='png')
+    plt.close()
+    mb.seek(0)
+    return base64.b64encode(mb.getvalue()).decode('utf-8')
 
 def get_target_count(labels):
-    fig = labels['target'].value_counts().plot.bar().get_figure()
-    return get_image(fig)
+    tb = io.BytesIO()
+    labels['target'].value_counts().plot.bar().get_figure().savefig(tb, format='png')
+    plt.close()
+    tb.seek(0)
+    return base64.b64encode(tb.getvalue()).decode('utf-8')
 
 def random_forest(data):
     data = get_clean_dataframes(data)
-    print(data.features.columns)
-    print(data.labels.columns)
 
+    print('splitting features')
     x_train, x_test, y_train, y_test = train_test_split(data.features, data.labels.values, train_size=0.7,test_size=0.3, random_state=101)
     forest = RandomForestClassifier(max_depth = 10, min_samples_split=2, n_estimators = 100, random_state = 1)
     y_train = y_train.ravel()
+    print('training model')
     model = forest.fit(x_train, y_train)
     y_pred = model.predict(x_test)
+
+    print('evaluating model')
     score = model.score(x_test, y_test)
     importance = pd.Series(model.feature_importances_, index=data.features.columns)
-    #print(importance)
-    #dd = importance.to_dict()
+    print('rendering feature importance')
+    img_importance = get_importance(importance)
+    print('rendering feature means')
+    img_pie = get_mean_pie(data.features)
+    print('rendering target count')
+    img_labels = get_target_count(data.labels)
+    mislabeled = int((y_test.ravel() != y_pred).sum())
 
     return {
         'score': score, 
         'trainedFields': len(x_train),
         'testedFields': len(x_test),
-        'mislabeled': str((y_test.ravel() != y_pred).sum()),
+        'mislabeled': mislabeled,
         'images': {
-            'importance': get_importance(importance),
-            'mean': get_mean_pie(data.features),
-            'labels': get_target_count(data.labels)
+            'importance': img_importance,
+            'mean': img_pie,
+            'labels': img_labels
         }
     }
