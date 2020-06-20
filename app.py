@@ -5,7 +5,7 @@ import songs
 import compress
 import probability
 import pickle
-import prepdata
+import datamanipulation
 
 app = fl.Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -65,8 +65,21 @@ def predict():
 @app.route('/api/songs/prepdata', methods=['POST'])
 def prep_data():
     posted_file = fl.request.json['data']
-    zipped_file = prepdata.prep_data(posted_file)
+    zipped_file = datamanipulation.prep_data(posted_file)
     return fl.send_file(zipped_file, attachment_filename='clean_data.zip', as_attachment=True)
+
+@app.route('/api/songs/naivebayes', methods=['POST'])
+def naive_bayes():
+    posted_file = fl.request.json['data']
+    result = datamanipulation.naive_bayes(posted_file)
+    return fl.jsonify(result)
+
+@app.route('/api/songs/randomforest', methods=['POST'])
+def random_forest():
+    posted_file = fl.request.json['data']
+    result = datamanipulation.random_forest(posted_file)
+    return fl.jsonify(result)
+
 
 @app.after_request
 def after_request(response):
@@ -77,8 +90,3 @@ def after_request(response):
     
 if __name__ == '__main__':
     app.run(debug=True)
-
-#2.71.10 or 11, also check 2.83, no config
-#3421
-#3415
-#check 3425 tshirt
