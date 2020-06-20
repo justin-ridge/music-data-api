@@ -1,3 +1,5 @@
 Flask
 Flask_cors
 uwsgi
+pandas
+sklearn
