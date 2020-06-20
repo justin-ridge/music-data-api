@@ -7,36 +7,12 @@ import compress
 import probability
 import pickle
 import datamanipulation
-import logging
-from logging.handlers import TimedRotatingFileHandler
-
-
-def logger():
-    logger = logging.getLogger('logger')
-    logHandler = TimedRotatingFileHandler(
-        filename="tmp/log", when="midnight")
-    logFormatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-    logHandler.setFormatter(logFormatter)
-
-    if not logger.handlers:
-        streamhandler = logging.StreamHandler()
-        streamhandler.setLevel(logging.ERROR)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(levelname)s - %(name)s - %(message)s')
-        streamhandler.setFormatter(formatter)
-        logger.addHandler(streamhandler)
-        logger.addHandler(logHandler)
-
-    # logger.error(message)
-    return logger
 
 
 app = fl.Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 compress.unzip_db()
 model = pickle.load(open('naive_bayes.sav', 'rb'))
-logger = logger()
 
 
 @app.route('/api/songs/health', methods=['GET'])
@@ -51,7 +27,7 @@ def get_song(songid):
     try:
         return songs.get_song(songid)
     except Exception as e:
-        logger.error(
+        print(
             'There was an unhandled exception in get_song(). ' + str(e))
         abort(500)
 
@@ -72,7 +48,7 @@ def get_songs():
         else:
             return songs.get_songs(page)
     except Exception as e:
-        logger.error(
+        print(
             'There was an unhandled exception in get_songs(). ' + str(e))
         abort(500)
 
@@ -82,7 +58,7 @@ def get_page_count():
     try:
         return songs.get_page_count()
     except Exception as e:
-        logger.error(
+        print(
             'There was an unhandled exception in get_page_count(). ' + str(e))
         abort(500)
 
@@ -92,7 +68,7 @@ def get_count():
     try:
         return songs.get_count()
     except Exception as e:
-        logger.error(
+        print(
             'There was an unhandled exception in get_count(). ' + str(e))
         abort(500)
 
@@ -115,7 +91,7 @@ def search_songs():
 
         return songs.search(name, artist, genre)
     except Exception as e:
-        logger.error(
+        print(
             'The user most likely submitted invalid data to search_songs(). ' + str(e))
         abort(400)
 
@@ -127,7 +103,7 @@ def predict():
         result = probability.predict(model, data)
         return fl.jsonify(result)
     except Exception as e:
-        logger.error(
+        print(
             'The user most likely submitted invalid data to predict(). ' + str(e))
         abort(400)
 
@@ -139,7 +115,7 @@ def prep_data():
         zipped_file = datamanipulation.prep_data(posted_file)
         return fl.send_file(zipped_file, attachment_filename='clean_data.zip', as_attachment=True)
     except Exception as e:
-        logger.error(
+        print(
             'The user most likely submitted invalid data to prep_data(). ' + str(e))
         abort(400)
 
@@ -151,7 +127,7 @@ def naive_bayes():
         result = datamanipulation.naive_bayes(posted_file)
         return fl.jsonify(result)
     except Exception as e:
-        logger.error(
+        print(
             'The user most likely submitted invalid data to naive_bayes(). ' + str(e))
         abort(400)
 
@@ -163,7 +139,7 @@ def random_forest():
         result = datamanipulation.random_forest(posted_file)
         return fl.jsonify(result)
     except Exception as e:
-        logger.error(
+        print(
             'The user most likely submitted invalid data to random_forest(). ' + str(e))
         abort(400)
 
