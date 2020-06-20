@@ -1,4 +1,5 @@
 import flask as fl
+from flask import abort, escape
 from flask_cors import CORS
 import http
 import songs
@@ -18,10 +19,10 @@ def get_song(songid):
 
 @app.route('/api/songs', methods=['GET'])
 def get_songs():
-    page = fl.request.args.get('page')
-    metadata = fl.request.args.get('metadata')
+    page = escape(fl.request.args.get('page'))
+    metadata = escape(fl.request.args.get('metadata'))
 
-    if page is None:
+    if page is None or not page.isnumeric():
         page = '0'
 
     if metadata == 'features':
@@ -41,9 +42,9 @@ def get_count():
 
 @app.route('/api/songs/search', methods=['GET'])
 def search_songs():
-    name = fl.request.args.get('name')
-    artist = fl.request.args.get('artist')
-    genre = fl.request.args.get('genre')
+    name = escape(fl.request.args.get('name'))
+    artist = escape(fl.request.args.get('artist'))
+    genre = escape(fl.request.args.get('genre'))
 
     if name is None:
         name = ''
@@ -64,26 +65,41 @@ def predict():
 
 @app.route('/api/songs/prepdata', methods=['POST'])
 def prep_data():
-    posted_file = fl.request.json['data']
-    zipped_file = datamanipulation.prep_data(posted_file)
-    return fl.send_file(zipped_file, attachment_filename='clean_data.zip', as_attachment=True)
+    try:
+        posted_file = fl.request.json['data']
+        zipped_file = datamanipulation.prep_data(posted_file)
+        return fl.send_file(zipped_file, attachment_filename='clean_data.zip', as_attachment=True)
+    except:
+        abort(400)
 
 @app.route('/api/songs/naivebayes', methods=['POST'])
 def naive_bayes():
-    posted_file = fl.request.json['data']
-    result = datamanipulation.naive_bayes(posted_file)
-    return fl.jsonify(result)
+    try:
+        posted_file = fl.request.json['data']
+        result = datamanipulation.naive_bayes(posted_file)
+        return fl.jsonify(result)
+    except:
+        abort(400)
 
 @app.route('/api/songs/randomforest', methods=['POST'])
 def random_forest():
-    posted_file = fl.request.json['data']
-    result = datamanipulation.random_forest(posted_file)
-    return fl.jsonify(result)
+    try:
+        posted_file = fl.request.json['data']
+        result = datamanipulation.random_forest(posted_file)
+        return fl.jsonify(result)
+    except:
+        abort(400)
 
+@app.errorhandler(500)
+def internal_error(error):
+    return "An unknown error has occurred."
+
+@app.errorhandler(400)
+def bad_request(error):
+    return "Bad request: please verify that your data is formatted correctly and try again.", 400
 
 @app.after_request
 def after_request(response):
-  response.headers.add('Access-Control-Allow-Origin', '*')
   response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
   response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
   return response
