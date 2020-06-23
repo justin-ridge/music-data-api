@@ -146,7 +146,7 @@ def random_forest():
 
 @app.errorhandler(500)
 def internal_error(error):
-    return "An unknown error has occurred."
+    return "An unknown error has occurred.", 500
 
 
 @app.errorhandler(400)
